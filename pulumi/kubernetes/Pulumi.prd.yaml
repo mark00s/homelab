@@ -1,0 +1,2 @@
+environment:
+  - homelab-k8s/prd
