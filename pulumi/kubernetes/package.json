@@ -2,11 +2,13 @@
     "name": "homelab-k8s",
     "main": "index.ts",
     "devDependencies": {
-        "@types/node": "^18",
-        "typescript": "^5.0.0"
+        "@types/node": "^24",
+        "biome": "^0.3.3",
+        "npm-check-updates": "^18.0.3",
+        "typescript": "^5.9.2"
     },
     "dependencies": {
-        "@pulumi/kubernetes": "^4.0.0",
-        "@pulumi/pulumi": "^3.113.0"
+        "@pulumi/kubernetes": "^4.23.0",
+        "@pulumi/pulumi": "^3.192.0"
     }
 }
