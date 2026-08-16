@@ -61,3 +61,30 @@ homelab/
 └── docs/
     └── diagrams/                  # generated SVGs — committed (safe: no real IPs/names)
 ```
+
+## Why?
+
+- **Project separation** - different stacks have different purposes to reduce blast radius
+in case of borked apply. Alas, multiple stacks can have well-defined, locical, order of
+execution, i.e. network -> talos (baremetal setup) -> Kubernetes Cluster
+- **Diagrams** - I am using DiagramJS on purpose, to regenerate generate well-described
+diagrams trough single TypeScript ecosystem (types, yay!).
+- **Bun workspaces** - inside root `package.json` as it works similar to npm — single
+`bun install` in root of the project with one shared tsconfig.base.json. Every single
+Pulumi project will have it's own `package.json` due to Pulumi requirement of dedicated
+Pulumi.yaml+package.json per projekt.
+
+### Concerns to consider later
+
+- Should I use pulumi for Kubernetes? ArgoCD/Flux might be better suited for small project
+(less boilerplate).
+
+### Trade-offs
+
+#### Pulumi ESC for sensitive data storage
+
+After thorough analysis, I decided to store sensitive configs, secrets in Pulumi ESC.
+It is far from perfection, as SaaSes tend to reduce free tiers across it's lifetime as per
+enshitification principle.
+**Alternative:** When Pulumi start biting, I can always switch from ESC to private repo,
+and add reference it as a submodule.
