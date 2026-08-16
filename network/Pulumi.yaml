@@ -1,5 +1,5 @@
 name: network
-description: Network configuration for the Hommelab
+description: Network configuration for the Homelab
 runtime:
   name: nodejs
   options:
