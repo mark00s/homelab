@@ -23,6 +23,10 @@ If you're about to write a value and you're not sure whether it falls into one o
 - Secrets: never inline in code or config. Use `pulumi config set --secret <key>` (Pulumi's built-in encryption) or environment variables populated outside the repo — never hardcode a "default" value that happens to be real
 - Stack configs holding real values (e.g. a production `Pulumi.<stack>.yaml`) belong outside this repo entirely. If one is needed for local testing, create it under a path already covered by `.gitignore` and say so explicitly to the user — don't assume it's fine to commit "just this once"
 
+## Pulumi stack outputs
+
+Any `pulumi.export(...)` call whose value could be used to access something — a kubeconfig, a talosconfig, a connection string, a generated password — must wrap the value in `pulumi.secret()` before exporting, e.g. `pulumi.export("kubeconfig", pulumi.secret(kubeconfig))`. An unmarked output is stored in plaintext in the stack state even if the value itself came from an encrypted secret elsewhere in the program. This applies especially to the `talos/` project (kubeconfig, talosconfig) and to any `StackReference` output consumed by another project — when reviewing a `StackReference` read, check that the producing stack actually marked the output as secret, don't just assume the consuming code is careful with it.
+
 ## Before every commit
 
 - Scan the diff for anything matching a private key block (`-----BEGIN...PRIVATE KEY-----`), a non-empty RouterOS password field, a kubeconfig `token:` / `client-key-data:` entry, or a base64 blob in a WireGuard `PrivateKey =` line
@@ -31,4 +35,4 @@ If you're about to write a value and you're not sure whether it falls into one o
 
 ## In documentation, READMEs, and diagrams
 
-Architecture explanations are the most valuable part of this repo for a portfolio — keep them detailed. But keep the detail on _design decisions_, not exact live values: describe the VLAN strategy in general terms ("a dedicated VLAN isolates IoT traffic from management traffic") rather than the literal VLAN ID and subnet actually in production.
+Architecture explanations are the most valuable part of this repo for a portfolio — keep them detailed. But keep the detail on *design decisions*, not exact live values: describe the VLAN strategy in general terms ("a dedicated VLAN isolates IoT traffic from management traffic") rather than the literal VLAN ID and subnet actually in production.
