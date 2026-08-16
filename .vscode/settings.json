@@ -1,5 +1,11 @@
 {
     "cSpell.words": [
-        "homelab"
+        "docstrings",
+        "enshittification",
+        "homelab",
+        "hostnames",
+        "kubeconfig",
+        "Pulumi",
+        "talosconfig"
     ]
 }
