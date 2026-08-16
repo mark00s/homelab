@@ -1,0 +1,13 @@
+{
+  "ignorePaths": [".gitignore"],
+  "words": [
+    "packagemanager",
+    "docstrings",
+    "enshittification",
+    "homelab",
+    "hostnames",
+    "kubeconfig",
+    "Pulumi",
+    "talosconfig"
+  ]
+}
