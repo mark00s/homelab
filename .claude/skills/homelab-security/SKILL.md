@@ -35,4 +35,4 @@ Any `pulumi.export(...)` call whose value could be used to access something — 
 
 ## In documentation, READMEs, and diagrams
 
-Architecture explanations are the most valuable part of this repo for a portfolio — keep them detailed. But keep the detail on *design decisions*, not exact live values: describe the VLAN strategy in general terms ("a dedicated VLAN isolates IoT traffic from management traffic") rather than the literal VLAN ID and subnet actually in production.
+Architecture explanations are the most valuable part of this repo for a portfolio — keep them detailed. But keep the detail on _design decisions_, not exact live values: describe the VLAN strategy in general terms ("a dedicated VLAN isolates IoT traffic from management traffic") rather than the literal VLAN ID and subnet actually in production.
