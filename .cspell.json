@@ -1,5 +1,7 @@
 {
-  "ignorePaths": [".gitignore"],
+  "ignorePaths": [
+    ".gitignore"
+  ],
   "words": [
     "packagemanager",
     "docstrings",
@@ -8,6 +10,29 @@
     "hostnames",
     "kubeconfig",
     "Pulumi",
-    "talosconfig"
+    "talosconfig",
+    "bazarr",
+    "dictionarry",
+    "dozzle",
+    "flaresolverr",
+    "gitleaks",
+    "hardlink",
+    "hardlinks",
+    "jellyfin",
+    "lektor",
+    "lscr",
+    "PGID",
+    "profilarr",
+    "prowlarr",
+    "PUID",
+    "radarr",
+    "rdtclient",
+    "rogerfar",
+    "routeros",
+    "seerr",
+    "solverr",
+    "sonarr",
+    "subdirs",
+    "tailnet"
   ]
 }

@@ -1,0 +1,20 @@
+# Secret scanning config, used by the pre-commit hook (see .pre-commit-config.yaml).
+title = "homelab gitleaks config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "wireguard-private-key"
+description = "WireGuard private key"
+# cspell:disable-next-line
+regex = '''(?i)private[-_ ]?key\s*[=:]\s*["']?([A-Za-z0-9+/]{42}[AEIMQUYcgkosw480]=)'''
+secretGroup = 1
+keywords = ["privatekey", "private-key", "private_key", "private key"]
+
+[[rules]]
+id = "routeros-password"
+description = "Non-empty RouterOS password field"
+regex = '''(?i)\bpassword=("[^"\s]+"|[^"\s]+)'''
+secretGroup = 1
+keywords = ["password="]
