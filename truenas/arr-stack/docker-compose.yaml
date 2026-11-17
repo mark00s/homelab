@@ -1,0 +1,176 @@
+# Media stack for TrueNAS (Apps -> Discover Apps -> Custom App -> Install via YAML)
+# Flow: Seerr -> Radarr/Sonarr -> Prowlarr -> RDT-Client (TorBox) -> /data/downloads -> hardlink -> /data/media -> Jellyfin
+#
+# Storage layout:
+#   /mnt/tank/appdata/<service>        per-service config (separate datasets are fine here; snapshot them)
+#   /mnt/tank/media                    ONE dataset. Everything below is a plain DIRECTORY, not a child dataset:
+#     downloads/                       RDT-Client output (radarr/ and sonarr/ subdirs are created per category)
+#     media/movies/                    Radarr root folder
+#     media/tv/                        Sonarr root folder
+#
+# IMPORTANT: hardlinks only work within a single filesystem. On ZFS every dataset is its own
+# filesystem, so if downloads/ and media/ were separate datasets, Radarr/Sonarr would silently
+# fall back to a full copy (2x disk usage, slow imports).
+# All containers see the same /data/... paths, so no Remote Path Mapping is needed.
+#
+# Remote access: via the TrueNAS Tailscale App (whole NAS joins the tailnet).
+# Restrict remote users with a Tailscale ACL to ports 5055 (Seerr) and 8096 (Jellyfin) only.
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+
+x-environment: &environment
+  PUID: "568" # TrueNAS default "apps" user; adjust if you use a custom one
+  PGID: "568"
+  TZ: "Europe/Warsaw"
+
+x-common: &common
+  restart: unless-stopped
+  logging: *logging
+  environment: *environment
+
+services:
+  jellyfin:
+    <<: *common
+    image: lscr.io/linuxserver/jellyfin:12.4ubu2604-ls59
+    container_name: jellyfin
+    ports:
+      - "8096:8096"
+    volumes:
+      - /mnt/tank/appdata/jellyfin:/config
+      - /mnt/tank/media/media:/data/media:ro
+    # Optional Intel iGPU transcoding (recommended for remote viewers on a slow uplink):
+    # devices:
+    #   - /dev/dri:/dev/dri
+
+  seerr:
+    image: ghcr.io/seerr-team/seerr:v3.5.2
+    container_name: seerr
+    init: true
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      TZ: "Europe/Warsaw"
+      PORT: "5055"
+    ports:
+      - "5055:5055"
+    volumes:
+      - /mnt/tank/appdata/seerr:/app/config # must be writable by the container user (often UID 1000)
+    depends_on:
+      - radarr
+      - sonarr
+
+  radarr:
+    <<: *common
+    # Kept on 6.x: Profilarr v2 supports only Radarr v5 and v6 (see renovate.json)
+    image: lscr.io/linuxserver/radarr:6.4.4.10685-ls327
+    container_name: radarr
+    ports:
+      - "7878:7878"
+    volumes:
+      - /mnt/tank/appdata/radarr:/config
+      - /mnt/tank/media:/data
+
+  sonarr:
+    <<: *common
+    image: lscr.io/linuxserver/sonarr:4.0.20.3014-ls5
+    container_name: sonarr
+    ports:
+      - "8989:8989"
+    volumes:
+      - /mnt/tank/appdata/sonarr:/config
+      - /mnt/tank/media:/data
+
+  prowlarr:
+    <<: *common
+    image: lscr.io/linuxserver/prowlarr:3.0.2.5780-ls169
+    container_name: prowlarr
+    ports:
+      - "9696:9696"
+    volumes:
+      - /mnt/tank/appdata/prowlarr:/config
+
+  # Solves Cloudflare challenges for indexers that need it.
+  # In Prowlarr: Settings -> Indexers -> add FlareSolverr proxy (http://flaresolverr:8191),
+  # give it a tag, and put the same tag only on indexers that require it.
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
+    container_name: flaresolverr
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      TZ: "Europe/Warsaw"
+      LOG_LEVEL: "info"
+
+  bazarr:
+    <<: *common
+    image: lscr.io/linuxserver/bazarr:v1.6.2-ls372
+    container_name: bazarr
+    ports:
+      - "6767:6767"
+    volumes:
+      - /mnt/tank/appdata/bazarr:/config
+      - /mnt/tank/media/media:/data/media
+
+  rdtclient:
+    <<: *common
+    image: rogerfar/rdtclient:2.0.143
+    container_name: rdtclient
+    ports:
+      - "6500:6500"
+    volumes:
+      - /mnt/tank/appdata/rdtclient:/data/db
+      - /mnt/tank/media/downloads:/data/downloads # same path as inside Radarr/Sonarr (/data/downloads)
+
+  # Manages quality profiles and custom formats for Radarr/Sonarr (e.g. prefer Polish voice-over (lektor) or dubbing,
+  # cap 1080p file size). Creates an admin account on first launch.
+  # In Profilarr: add Radarr (http://radarr:7878) and Sonarr (http://sonarr:8989) with their API keys.
+  # Keep profilarr and profilarr-parser on the same tag.
+  profilarr:
+    <<: *common
+    image: ghcr.io/dictionarry-hub/profilarr:2.3.1
+    container_name: profilarr
+    environment:
+      <<: *environment
+      PARSER_HOST: "profilarr-parser"
+      PARSER_PORT: "5000"
+    ports:
+      - "6868:6868"
+    volumes:
+      - /mnt/tank/appdata/profilarr:/config
+    depends_on:
+      profilarr-parser:
+        condition: service_healthy
+
+  # Stateless release-name parser, needed only for custom format / quality profile testing.
+  # Not published on the host; Profilarr reaches it over the stack network.
+  profilarr-parser:
+    image: ghcr.io/dictionarry-hub/profilarr-parser:2.3.1
+    container_name: profilarr-parser
+    restart: unless-stopped
+    logging: *logging
+
+  # Web log viewer for all containers, protected by built-in login (simple auth).
+  # Create /mnt/tank/appdata/dozzle/users.yml BEFORE first start:
+  #   read -rs DOZZLE_PASSWORD  # prompts for the password, keeps it out of shell history
+#   docker run --rm amir20/dozzle generate admin --password "$DOZZLE_PASSWORD" --name Admin \
+  #     > /mnt/tank/appdata/dozzle/users.yml
+  # Note: ':ro' on the socket only prevents replacing the socket file, NOT Docker API writes.
+  # Container actions (start/stop) and shell stay disabled (Dozzle default) — keep it that way.
+  dozzle:
+    image: amir20/dozzle:v11.4.3
+    container_name: dozzle
+    restart: unless-stopped
+    logging: *logging
+    environment:
+      TZ: "Europe/Warsaw"
+      DOZZLE_AUTH_PROVIDER: "simple"
+      DOZZLE_AUTH_TTL: "48h" # session length; default is until browser closes
+      DOZZLE_NO_ANALYTICS: "true"
+    ports:
+      - "8888:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /mnt/tank/appdata/dozzle:/data # holds users.yml
