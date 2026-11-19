@@ -1,6 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": [
+    "config:recommended",
+    "helpers:pinGitHubActionDigests",
+    "docker:pinDigests"
+  ],
   "timezone": "Europe/Warsaw",
   "pre-commit": {
     "enabled": true
@@ -10,8 +14,11 @@
       "description": "gitleaks image used via `docker run` in the CI workflow",
       "customType": "regex",
       "managerFilePatterns": ["/^\\.github/workflows/gitleaks\\.yml$/"],
-      "matchStrings": ["(?<depName>ghcr\\.io/gitleaks/gitleaks):(?<currentValue>v[0-9.]+)"],
-      "datasourceTemplate": "docker"
+      "matchStrings": [
+        "(?<depName>ghcr\\.io/gitleaks/gitleaks):(?<currentValue>v[0-9.]+)(?:@(?<currentDigest>sha256:[a-f0-9]{64}))?"
+      ],
+      "datasourceTemplate": "docker",
+      "autoReplaceStringTemplate": "{{depName}}:{{newValue}}{{#if newDigest}}@{{newDigest}}{{/if}}"
     }
   ],
   "packageRules": [
@@ -35,7 +42,10 @@
     },
     {
       "description": "Profilarr and its parser must run the same tag",
-      "matchPackageNames": ["ghcr.io/dictionarry-hub/profilarr", "ghcr.io/dictionarry-hub/profilarr-parser"],
+      "matchPackageNames": [
+        "ghcr.io/dictionarry-hub/profilarr",
+        "ghcr.io/dictionarry-hub/profilarr-parser"
+      ],
       "groupName": "profilarr"
     },
     {
