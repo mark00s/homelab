@@ -34,7 +34,7 @@ x-common: &common
 services:
   jellyfin:
     <<: *common
-    image: lscr.io/linuxserver/jellyfin:12.4ubu2604-ls59
+    image: lscr.io/linuxserver/jellyfin:12.4ubu2604-ls59@sha256:2f708001387aa9853e744a4a4d572d9970927c479c56d6c9e199f789c5173535
     container_name: jellyfin
     ports:
       - "8096:8096"
@@ -46,7 +46,7 @@ services:
     #   - /dev/dri:/dev/dri
 
   seerr:
-    image: ghcr.io/seerr-team/seerr:v3.5.2
+    image: ghcr.io/seerr-team/seerr:v3.5.2@sha256:aadee014b40e28cf9aa4928bc9d1183a6eb08f8c44d543cddc9efdcb16549be2
     container_name: seerr
     init: true
     restart: unless-stopped
@@ -65,7 +65,7 @@ services:
   radarr:
     <<: *common
     # Kept on 6.x: Profilarr v2 supports only Radarr v5 and v6 (see renovate.json)
-    image: lscr.io/linuxserver/radarr:6.4.4.10685-ls327
+    image: lscr.io/linuxserver/radarr:6.4.4.10685-ls327@sha256:7a20f20de63706eee2ff6e4ac1f989a70c961f456aa47ccb6c78f2bb7657d9ae
     container_name: radarr
     ports:
       - "7878:7878"
@@ -75,7 +75,7 @@ services:
 
   sonarr:
     <<: *common
-    image: lscr.io/linuxserver/sonarr:4.0.20.3014-ls5
+    image: lscr.io/linuxserver/sonarr:4.0.20.3014-ls5@sha256:c7d1df25e428da6c9ace05daea0d34e59522978a3843ea1944812f855af4086c
     container_name: sonarr
     ports:
       - "8989:8989"
@@ -85,7 +85,7 @@ services:
 
   prowlarr:
     <<: *common
-    image: lscr.io/linuxserver/prowlarr:3.0.2.5780-ls169
+    image: lscr.io/linuxserver/prowlarr:3.0.2.5780-ls169@sha256:45117ba8439e2337a92ffe38a451a4dafc0be771754d05d88cdf102419d09646
     container_name: prowlarr
     ports:
       - "9696:9696"
@@ -96,7 +96,7 @@ services:
   # In Prowlarr: Settings -> Indexers -> add FlareSolverr proxy (http://flaresolverr:8191),
   # give it a tag, and put the same tag only on indexers that require it.
   flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:v3.5.2
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.2@sha256:c80ae007ce2ccdcd217a12426e4f039ef763ff90738c808d38810c3e59323767
     container_name: flaresolverr
     restart: unless-stopped
     logging: *logging
@@ -106,7 +106,7 @@ services:
 
   bazarr:
     <<: *common
-    image: lscr.io/linuxserver/bazarr:v1.6.2-ls372
+    image: lscr.io/linuxserver/bazarr:v1.6.2-ls372@sha256:832820dec70bce9e912c6eee7a95baf6551e03dbc63325a7208daaa455423752
     container_name: bazarr
     ports:
       - "6767:6767"
@@ -116,7 +116,7 @@ services:
 
   rdtclient:
     <<: *common
-    image: rogerfar/rdtclient:2.0.143
+    image: rogerfar/rdtclient:2.0.143@sha256:68523637d09ec8a120bd272756d58b393448a656b5967bd45622c4891c65ff36
     container_name: rdtclient
     ports:
       - "6500:6500"
@@ -160,7 +160,7 @@ services:
   # Note: ':ro' on the socket only prevents replacing the socket file, NOT Docker API writes.
   # Container actions (start/stop) and shell stay disabled (Dozzle default) — keep it that way.
   dozzle:
-    image: amir20/dozzle:v11.4.3
+    image: amir20/dozzle:v11.4.3@sha256:244f218c876d6ed766277e71a537f34bfb2c01829e1927737e3673a8327deeb8
     container_name: dozzle
     restart: unless-stopped
     logging: *logging
