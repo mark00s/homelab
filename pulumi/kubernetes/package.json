@@ -2,7 +2,7 @@
     "name": "homelab-k8s",
     "main": "index.ts",
     "devDependencies": {
-        "@types/node": "^24",
+        "@types/node": "^26.0.0",
         "biome": "^0.3.3",
         "npm-check-updates": "^18.0.3",
         "typescript": "^5.9.2"
